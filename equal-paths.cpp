@@ -38,6 +38,9 @@ bool equalPaths(Node * root)
 int countChildren(Node *root) {
     // is a leaf
     int rightC, leftC;
+    if (root==nullptr)
+        return 0;
+    
     if ((root->left==nullptr) && (root->right==nullptr))
         return 1;
 
