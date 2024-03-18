@@ -543,7 +543,7 @@ void BinarySearchTree<Key, Value>::removeHelper(const Key& key, Node* &curr)
     if (curr->getKey()==key) { // this is the one to remove
         // check if two children
         if ((curr->getRight()!=nullptr) && (curr->getLeft()!=nullptr)) {
-            
+
         }
 
         return;
@@ -565,6 +565,36 @@ Node<Key, Value>*
 BinarySearchTree<Key, Value>::predecessor(Node<Key, Value>* current)
 {
     // TODO
+    if (current==nullptr)
+        return nullptr;
+    // if left child exists
+    if (current->getLeft()!=nullptr) {
+        current = current->getLeft();
+        // get rightmost node of this subtree
+        while (current->getRight()!=nullptr)
+            current = current->getRight();
+        // if exited while loop, then current doesn't have a right child. 
+        // then it's the rightmost node in the tree
+        return current;
+    }
+    // else left child doesn't exist
+
+    while (current->getParent()!=nullptr) {
+        // if current is a right child, its parent is the pred
+        if (current->getParent()->getRight()==current())
+            return current->getParent();
+        // else current is a left child
+        // check if grandparent exists
+        if (current->getParent()->getParent()!=nullptr) {
+            // if current's parent is the right child of a grandparent
+            if (current->getParent()->getParent()->getRight()==current->getParent())
+                return current->getParent()->getParent(); // return the grandparent
+        }
+        // grandparent exists but current' parent wasn't the right child
+        current = current->getParent(); // climb
+    }
+    // if exited while loop, then current doesn't have parent. there can be no predecessor
+    return nullptr;
 }
 
 
