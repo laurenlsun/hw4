@@ -193,8 +193,8 @@ template <typename Key, typename Value>
 class BinarySearchTree
 {
 public:
-    BinarySearchTree(); //TODO // DONE
-    virtual ~BinarySearchTree(); //TODO
+    BinarySearchTree(); //TODO DONE
+    virtual ~BinarySearchTree(); //TODO DONE
     virtual void insert(const std::pair<const Key, Value>& keyValuePair); //TODO
     virtual void remove(const Key& key); //TODO
     void clear(); //TODO
@@ -250,6 +250,8 @@ protected:
     void insertHelper(const std::pair<const Key, Value> &keyValuePair, const Node<Key, Value>* &parent, const Node<Key, Value>* &curr);
     Node<Key, Value>* BinarySearchTree<Key, Value>::findHelper(const Key& key, const Node<Key, Value>* &current) const;
     void BinarySearchTree<Key, Value>::clearHelper(Node<Key, Value>* current);
+    static Node<Key, Value>* successor(Node<Key, Value>* current);
+    int BinarySearchTree<Key, Value>::height(Node<Key,Value>* root);
 
 protected:
     Node<Key, Value>* root_;
@@ -342,35 +344,7 @@ typename BinarySearchTree<Key, Value>::iterator&
 BinarySearchTree<Key, Value>::iterator::operator++()
 {
     // TODO
-    // if has right child, set to that
-    if (current_->getRight()!=nullptr)
-        current_ = current_->getRight();
-    else { 
-        // if curr node has no right child and no parent
-        // do nothing
-        // else if no right child but is a left child return parent
-        if (current_->getParent()!=nullptr) {
-            // if it's a left child
-            if (current_->getParent()->getLeft()==current_) {
-                current_ = current_->getParent();
-                return;
-            }    
-        }
-        // else current is a right child; need to check if parent. keep going until an ancestor is a left child
-        Node* temp = current_;
-        while (temp->getParent()!=nullptr) { // keep going up until it's the left child of something
-            if (temp->getParent()->getParent()!=nullptr) {
-                if (temp->getParent()->getParent()->getLeft()==temp->getParent()) {
-                    current_ = temp->getParent()->getParent();
-                    return;
-                }
-            }
-            temp = temp->getParent();
-        }
-        current_ = nullptr;
-        // reached end of while loop--no ancestor was found to be the left child of anyone. nothing happens it's the last item.
-    }
-
+    current = successor(current);
 }
 
 
@@ -622,6 +596,65 @@ BinarySearchTree<Key, Value>::predecessor(Node<Key, Value>* current)
     return nullptr;
 }
 
+template<class Key, class Value>
+Node<Key, Value>*
+BinarySearchTree<Key, Value>::successor(Node<Key, Value>* current)
+{
+    if (current==nullptr)
+        return nullptr;
+    // if right child exists
+    if (current->getRight()!=nullptr) {
+        current = current->getRight();
+        // get leftmost node of this subtree
+        while (current->getLeft()!=nullptr)
+            current = current->getLeft();
+        // if exited while loop, then current doesn't have a left child. 
+        // then it's the leftmost node in the subtree
+        return current;
+    }
+
+    // else right subtree doesn't exist
+    while(current->getParent()!=nullptr) {
+        // if current is a left child (and current has no right child), its parent is the successor
+        if (current->getParent()->getLeft()==current())
+            return current->getParent();
+
+        // else current is a right child
+        // check if grandparent exists
+        if (current->getParent()->getParent()!=nullptr) {
+            // if current's parent is the left child of a grandparent
+            if (current->getParent()->getParent()->getLeft()==current->getParent())
+                return current->getParent()->getParent(); // return the grandparent
+        }
+        // grandparent exists but current' parent wasn't the right child
+        current = current->getParent(); // climb
+        //________________
+        // // if curr node has no right child and no parent
+        // // do nothing
+        // // else if no right child but is a left child return parent
+        // if (current_->getParent()!=nullptr) {
+        //     // if it's a left child
+        //     if (current_->getParent()->getLeft()==current_) {
+        //         current_ = current_->getParent();
+        //         return;
+        //     }    
+        // }
+        // // else current is a right child; need to check if parent. keep going until an ancestor is a left child
+        // Node* temp = current_;
+        // while (temp->getParent()!=nullptr) { // keep going up until it's the left child of something
+        //     if (temp->getParent()->getParent()!=nullptr) {
+        //         if (temp->getParent()->getParent()->getLeft()==temp->getParent()) {
+        //             current_ = temp->getParent()->getParent();
+        //             return;
+        //         }
+        //     }
+        //     temp = temp->getParent();
+        // }
+        // current_ = nullptr;
+        // // reached end of while loop--no ancestor was found to be the left child of anyone. nothing happens it's the last item.
+    }
+    return nullptr;
+}
 
 /**
 * A method to remove all contents of the tree and
@@ -696,9 +729,26 @@ template<typename Key, typename Value>
 bool BinarySearchTree<Key, Value>::isBalanced() const
 {
     // TODO
+    if (height(root_) != -1)
+		return true;
 }
 
-
+template<typename Key, typename Value>
+int BinarySearchTree<Key, Value>::height(Node<Key,Value>* root) {
+	if (root==nullptr)
+		return 0;
+	int leftH = height(root->getLeft());
+	int rightH = height(root->getRight());
+	if ((leftH==-1) || (rightH==-1)) // one of them invalid
+		return -1;
+	// diff is too big
+	if ((leftH-rightH>=2) || (leftH-rightH<=-2))
+		return -1;
+	// return max
+	if (leftH>rightH)
+		return leftH + 1;
+	return rightH + 1;
+}
 
 template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::nodeSwap( Node<Key,Value>* n1, Node<Key,Value>* n2)
