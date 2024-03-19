@@ -193,7 +193,7 @@ template <typename Key, typename Value>
 class BinarySearchTree
 {
 public:
-    BinarySearchTree(); //TODO
+    BinarySearchTree(); //TODO // DONE
     virtual ~BinarySearchTree(); //TODO
     virtual void insert(const std::pair<const Key, Value>& keyValuePair); //TODO
     virtual void remove(const Key& key); //TODO
@@ -248,9 +248,8 @@ protected:
 
     // Add helper functions here
     void insertHelper(const std::pair<const Key, Value> &keyValuePair, const Node<Key, Value>* &parent, const Node<Key, Value>* &curr);
-    // void BinarySearchTree<Key, Value>::removeHelper(const Key& key, Node* &curr);
     Node<Key, Value>* BinarySearchTree<Key, Value>::findHelper(const Key& key, const Node<Key, Value>* &current) const;
-
+    void BinarySearchTree<Key, Value>::clearHelper(Node<Key, Value>* current);
 
 protected:
     Node<Key, Value>* root_;
@@ -401,7 +400,7 @@ template<typename Key, typename Value>
 BinarySearchTree<Key, Value>::~BinarySearchTree()
 {
     // TODO
-
+    clear();
 }
 
 /**
@@ -632,8 +631,19 @@ template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::clear()
 {
     // TODO
+    // post order traversal
+    clearHelper(root_);
 }
 
+template<typename Key, typename Value>
+void BinarySearchTree<Key, Value>::clearHelper(Node<Key, Value>* current) {
+    if (current==nullptr) // this subtree is done
+        return;
+    clearHelper(current->getLeft());
+    clearHelper(current->getRight());
+    // now that both children cleared, delete current
+    delete current;
+}
 
 /**
 * A helper function to find the smallest node in the tree.
