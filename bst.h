@@ -252,7 +252,7 @@ protected:
     Node<Key, Value> *findHelper(const Key& key, Node<Key, Value>* current) const;
     void clearHelper(Node<Key, Value>* current);
     static Node<Key, Value>* successor(Node<Key, Value>* current);
-    int height(Node<Key,Value>* root);
+    int height(Node<Key,Value>* root) const;
 
 protected:
     Node<Key, Value>* root_;
@@ -743,7 +743,7 @@ bool BinarySearchTree<Key, Value>::isBalanced() const
 }
 
 template<typename Key, typename Value>
-int BinarySearchTree<Key, Value>::height(Node<Key,Value>* root) {
+int BinarySearchTree<Key, Value>::height(Node<Key,Value>* root) const {
 	if (root==nullptr)
 		return 0;
 	int leftH = height(root->getLeft());
