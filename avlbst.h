@@ -137,7 +137,7 @@ protected:
     virtual void nodeSwap( AVLNode<Key,Value>* n1, AVLNode<Key,Value>* n2);
 
     // Add helper functions here
-
+    void insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* n);
 
 };
 
@@ -149,6 +149,84 @@ template<class Key, class Value>
 void AVLTree<Key, Value>::insert (const std::pair<const Key, Value> &new_item)
 {
     // TODO
+    // empty
+    if (root_==nullptr) {
+        AVLNode<Key, Value>* newNode = new AVLNode<Key, Value>(new_item.first, new_item.second, nullptr);
+        root_ = newNode;
+        return;
+    }
+    // else tree not empty
+    bool done = false;
+    AVLNode<Key, Value>* current = root_;
+    while(!done) { 
+        if (current->getKey()==new_item.first) {
+            current->setValue(new_item.second);
+            // updating doesn't change balance, no need to fix tree
+            return;
+        }
+         // figure out whether to move right or left
+        // left
+        if (new_item.first < current->getKey()) {
+            // check if there's an empty spot there
+            if (current->getLeft()==NULL) {
+                // insert it here
+                AVLNode<Key, Value>* newNode = new AVLNode<Key, Value>(new_item.first, new_item.second, current);
+                current->setLeft(newNode);
+                done = true;
+            }
+            else { // current has a left child
+                current = current->getLeft();
+            }
+        }
+        // right
+        else {
+            // check if there's an empty spot there
+            if (current->getRight()==NULL) {
+                // insert it here
+                AVLNode<Key, Value>* newNode = new AVLNode<Key, Value>(new_item.first, new_item.second, current);
+                current->setRight(newNode);
+                done = true;
+            }
+            else { // current has a left child
+                current = current->getRight();
+            }
+        }
+    }
+    // exited loop means newNode was created
+    // use newNode parent pointer to take care of tree balance
+    // newNode must have parent, or else it was the root
+    if ((newNode->getParent()->getBalance()==-1) || (newNode->getParent()->getBalance()==1)) {
+        newNode->getParent()->setBalance(0);
+        return;
+    }
+     // b(p) = 0
+    if (newNode->getParent()->getRight()==newNode) // we just added a right child
+        newNode->getParent()->updateBalance(1); // right-left just increased by 1
+    // else we just added a left child
+    else
+        newNode->getParent()->updateBalance(-1); // right-left just decreased by 1
+    
+    insertFix(newNode->getParent(), newNode);
+}
+
+template<class Key, class Value>
+void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* n) {
+    if (p==nullptr)
+        return;
+    AVLNode<Key, Value>* g = p->getParent();
+    // if p is left child of g
+    if (g->getLeft()==p) {
+        g->updateBalance(-1); // added something to its left side -> right-left decreased
+        if (g->getBalance()==0)
+            return;
+        if (g->getBalance()==-1)
+            insertFix(g, p);
+        else { // b(g) = -2
+            if // zig-zig then rotateRight(g); b(p) = b(g) = 0
+        }
+
+    }
+
 }
 
 /*
