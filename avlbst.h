@@ -138,7 +138,8 @@ protected:
 
     // Add helper functions here
     void insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* n);
-
+    void AVLTree<Key, Value>::rotateRight(AVLNode<Key,Value>* g);
+    void AVLTree<Key, Value>::rotateLeft(AVLNode<Key,Value>* p);
 };
 
 /*
@@ -214,6 +215,9 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* n
     if (p==nullptr)
         return;
     AVLNode<Key, Value>* g = p->getParent();
+    if (g==nullptr)
+        // ?
+    
     // if p is left child of g
     if (g->getLeft()==p) {
         g->updateBalance(-1); // added something to its left side -> right-left decreased
@@ -222,12 +226,85 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* n
         if (g->getBalance()==-1)
             insertFix(g, p);
         else { // b(g) = -2
-            if // zig-zig then rotateRight(g); b(p) = b(g) = 0
+            if (p->getLeft()==n) { // zig-zig then rotateRight(g); b(p) = b(g) = 0
+                rotateRight(g);
+                p->setBalance(0);
+                g->setBalance(0);
+            }
+            else { // zig-zag
+                rotateLeft(p);
+                rotateRight(g);
+                if (n->getBalance()==-1) {
+                    p->setbalance(0);
+                    g->setBalance(1);
+                }
+                else if (n->getBalance()==0) {
+                    p->setBalance(0);
+                    g->setBalance(0);
+                }
+                else if (n->getBalance()==1) {
+                    p->setBalance(-1);
+                    g->setBalance(0);
+                }
+                n->setBalance(0);
+            }
         }
 
     }
+    else { // p is right child of g
+        g->updateBalance(1); // added something to its left side -> right-left decreased
+        if (g->getBalance()==0)
+            return;
+        if (g->getBalance()==-1)
+            insertFix(g, p);
+        else { // b(g) = 2
+            if (p->getRight()==n) { // zig-zig then rotateLeft(g); b(p) = b(g) = 0
+                rotateLeftt(g);
+                p->setBalance(0);
+                g->setBalance(0);
+            }
+            else { // zig-zag
+                rotateRight(p);
+                rotateLeft(g);
+                if (n->getBalance()==1) {
+                    p->setbalance(0);
+                    g->setBalance(-1);
+                }
+                else if (n->getBalance()==0) {
+                    p->setBalance(0);
+                    g->setBalance(0);
+                }
+                else if (n->getBalance()==-1) {
+                    p->setBalance(1);
+                    g->setBalance(0);
+                }
+                n->setBalance(0);
+            }
+        }
+    }
 
 }
+
+template<class Key, class Value>
+void AVLTree<Key, Value>::rotateRight(AVLNode<Key,Value>* g) {
+    AVLNode* y = g->getLeft();
+    AVLNode* c = y->getRight(); // the whole c subtree
+    y->setRight(g);
+    g->setParent(y);
+    g->setLeft(c);
+    c->setParent(g);
+}
+
+template<class Key, class Value>
+void AVLTree<Key, Value>::rotateLeft(AVLNode<Key,Value>* p) {
+    AVLNode* y = g->getRight();
+    AVLNode* b = y->getLeft(); // the whole b subtree
+    y->setLeft(g);
+    g->setParent(y);
+    g->setRight(b);
+    b->setParent(g);
+}
+
 
 /*
  * Recall: The writeup specifies that if a node has 2 children you
