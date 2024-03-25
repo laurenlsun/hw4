@@ -140,6 +140,8 @@ protected:
     void insertFix(AVLNode<Key,Value>* p, AVLNode<Key,Value>* n);
     void AVLTree<Key, Value>::rotateRight(AVLNode<Key,Value>* g);
     void AVLTree<Key, Value>::rotateLeft(AVLNode<Key,Value>* p);
+    void AVLTree<Key, Value>:: removeFix(AVLNode<Key, Value>* n, int diff);
+
 };
 
 /*
@@ -314,6 +316,125 @@ template<class Key, class Value>
 void AVLTree<Key, Value>:: remove(const Key& key)
 {
     // TODO
+    if (root_==nullptr) // nothing to remove
+        return;
+    AVLNode<Key, Value>* current = root_;
+    while(current!=nullptr) {
+        if (key==current->getKey()) {
+            //remove current
+            // 2 children
+            if ((current->getRight()!=nullptr) && (current->getLeft()!=nullptr))
+                nodeSwap(current, BinarySearchTree<Key, Value>::predecessor(current));
+            AVLNode<Key, Value>* p = current->parent();
+            int diff = 0
+            if (p!=nullptr) {
+                // current is a left child
+                if (p->getLeft()==current)
+                    diff = 1;
+                else
+                    diff = -1;
+            }
+
+            // now 1 or 0 children
+            // 0 children
+            if ((current->getRight()==nullptr) && (current->getLeft()==nullptr)) {
+                if (p!=nullptr) { // parent exists
+                    // current is a left child
+                    if (p->getLeft()==current)
+                        p->setLeft(nullptr);
+                    else
+                        p->setRight(nullptr);
+                }
+                // else no parent
+                root_ = nullptr;
+            }
+            // 1 child
+            else {
+                if (current->getRight()==nullptr) 
+                    AVLNode<Key, Value>* child = current->getLeft();
+                else
+                    AVLNode<Key, Value>* child = current->getRight();
+                
+                if (p!=nullptr) { // parent exists
+                    if (p->getLeft()==current) // current was a left child
+                        p->setLeft(child); // set current's child to parent's child
+                    else // current was a right child
+                        p->setRight(child); 
+                }
+                else // no parent
+                    root_ = child;
+                
+                child->setParent(p);
+            }
+            delete current;
+            removeFix(p, diff);
+            return;
+        } // end of if key==current key
+
+        // this is not the key
+        // continue search
+        else if (key<current->getKey())
+            current = current->getLeft();
+        else
+            current = current->getRight();
+    } // end while loop
+    // current is null means key not found. do nothing
+}
+
+template<class Key, class Value>
+void AVLTree<Key, Value>:: removeFix(AVLNode<Key, Value>* n, int diff) {
+    if (n==nullptr)
+        return;
+    AVLNode<Key, Value>* p = n->getParent();
+    if (p!=nullptr) {
+        if (p->getLeft()==n)
+            int ndiff = 1;
+        else
+            int ndiff = -1;
+    }
+
+    if (n->getBalance() + diff == -2) {
+        AVLNode<Key, Value>* c = n->getLeft();
+        if (c->getBalance()==-1) {
+            rotateRight(n);
+            n->setBalance(-1);
+            c->setBalance(1);
+            return;
+        }
+        else if (c->getBalance()==0) {
+            rotateRight(n);
+            n->setBalance(-1);
+            c->setBalance(1);
+            return;
+        }
+        else if (c->getBalance()==1) {
+            AVLNode<Key, Value>* g = c->getRight(c);
+            rotateLeft(c);
+            rotateRight(n);
+            if (g->getBalance()==1) {
+                n->setBalance(0);
+                c->setBalance(-1);
+            }
+            else if (g->getBalance()==0) {
+                n->setBalance(0);
+                c->setBalance(0);
+            }
+            else if (g->getBalance()==-1) {
+                n->setBalance(1);
+                c->setBalance(0);
+            }
+            g->setBalance(0);
+            removeFix(p, ndiff);
+        }
+    }
+    else if (n->getBalance() + diff == -1) {
+        n->setBalance(-1);
+        return;
+    }
+    else if (n->getBalance() + diff == 0) {
+        n->setBalance(0);
+        removeFix(p, ndiff);
+    }
 }
 
 template<class Key, class Value>
